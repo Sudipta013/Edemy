@@ -1,0 +1,9 @@
+Pakages:
+
+react-router-dom - add routing in project
+react-youtube - add the youtube video in project
+uniqid - generate unique hexadecimal id for each video course
+quill -  rich text for course description
+humanize-duration - convert time duration to human readable format in hrs min and sec
+rc-progress - design progress bar for course duration 
+react-simple-star-rating - add star rating for course

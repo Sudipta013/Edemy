@@ -7,4 +7,4 @@ userRouter.get('/data', getUserData);
 userRouter.get('/enrolled-courses', getUserEnrolledCourses);
 userRouter.post('/purchase', purchaseCourse);
 
-export default userRouter;
+export default userRouter; 

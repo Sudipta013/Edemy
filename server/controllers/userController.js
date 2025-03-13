@@ -74,6 +74,21 @@ export const purchaseCourse = async (req, res) => {
             quantity: 1
         }]
 
+        const customer = await stripeInstance.customers.create({
+            email: userData.email,
+            name: userData.name || "Guest User",
+            address: {
+                line1: userData.address?.line1 || "Default Address",
+                city: userData.city?.city || "Default City",
+                state: userData.state?.state || "Default State",
+                postal_code: userData.postalCode?.postalCode || "Default Postal Code",
+                country: userData.country?.country || "IN",
+            },
+            metadata: {
+                userId: userData._id.toString()
+            }
+        })
+
         const session = await stripeInstance.checkout.sessions.create({
             line_items: line_items,
             mode: 'payment',
@@ -82,16 +97,7 @@ export const purchaseCourse = async (req, res) => {
             metadata:{
                 purchaseId: newPurchase._id.toString()
             },
-            customer_details: {
-                name: userData.name || "Guest User",
-                address: {
-                    line1: userData.address?.line1 || "Default Address",
-                    city: userData.city?.city || "Default City",
-                    state: userData.state?.state || "Default State",
-                    postal_code: userData.postalCode?.postalCode || "Default Postal Code",
-                    country: userData.country?.country || "IN",
-                }
-            }
+            customer: customer.id,
         })
 
         res.json({ success: true, session_url: session.url });

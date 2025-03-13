@@ -34,12 +34,12 @@ export const clerkWebhooks = async (req, res) => {
 
 			case "user.updated": {
 				const userData = {
-					email: data.email_address[0].email_address,
+					email: data.email_addresses[0].email_address,
 					name: data.first_name + " " + data.last_name,
 					imageUrl: data.image_url,
 				};
 
-				await User.findbyIdAndUpdate(data.id, userData);
+				await User.findByIdAndUpdate(data.id, userData);
 				res.json({});
 				break;
 			}
@@ -82,13 +82,24 @@ export const stripeWebhooks = async (req, res) => {
 			const paymentIntent = event.data.object;
 			const paymentIntentId = paymentIntent.id;
 
-			const session = await stripeInstance.checkout.sessions.list({
+			const sessions = await stripeInstance.checkout.sessions.list({
 				payment_intent: paymentIntentId,
 			});
 
-			const { purchaseId } = session.data[0].metadata;
+			if (!sessions.data.length) {
+				console.error("No matching Stripe session found");
+				return res.status(400).json({ error: "Session not found" });
+			}
+
+			const { purchaseId } = sessions.data[0].metadata;
 
 			const purchaseData = await Purchase.findById(purchaseId);
+
+			if (!purchaseData) {
+				console.error("Purchase record not found");
+				return res.status(400).json({ error: "Purchase not found" });
+			}
+
 			const userData = await User.findById(purchaseData.userId);
 			const courseData = await Course.findById(
 				purchaseData.courseId.toString()
@@ -109,15 +120,25 @@ export const stripeWebhooks = async (req, res) => {
 			const paymentIntent = event.data.object;
 			const paymentIntentId = paymentIntent.id;
 
-			const session = await stripeInstance.checkout.sessions.list({
+			const sessions = await stripeInstance.checkout.sessions.list({
 				payment_intent: paymentIntentId,
 			});
 
-			const { purchaseId } = session.data[0].metadata;
+			if (!sessions.data.length) {
+				console.error("No matching Stripe session found");
+				return res.status(400).json({ error: "Session not found" });
+			}
+
+			const { purchaseId } = sessions.data[0].metadata;
 
 			const purchaseData = await Purchase.findById(purchaseId);
-			purchaseData.status = "failed";
 
+			if (!purchaseData) {
+				console.error("Purchase record not found");
+				return res.status(400).json({ error: "Purchase not found" });
+			}
+
+			purchaseData.status = "failed";
 			await purchaseData.save();
 
 			break;

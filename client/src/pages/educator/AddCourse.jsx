@@ -1,11 +1,15 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useContext, useEffect, useRef } from 'react'
 import uniqid from 'uniqid'
 import Quill from 'quill' // Quill is a rich text editor library
 import { useState } from 'react'
 import { assets } from '../../assets/assets'
+import { AppContext } from '../../context/AppContext'
+import { toast } from 'react-toastify'
+import axios from 'axios'
 
 const AddCourse = () => {
 
+  const { backendUrl, getToken } = useContext(AppContext);
 
   const quillRef = useRef(null);
   const editorRef = useRef(null);
@@ -89,14 +93,56 @@ const AddCourse = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    try {
+      e.preventDefault();
+      if (!image) {
+        toast.error("Thumbnail not selected")
+      }
+
+      const courseData = {
+        courseTitle,
+        courseDescription: quillRef.current.root.innerHTML,
+        coursePrice: Number(coursePrice),
+        discount: Number(discount),
+        courseContent: chapters,
+      }
+
+      const formData = new FormData();
+      formData.append('courseData', JSON.stringify(courseData));
+      formData.append('image', image);
+
+      //  api call 
+      const token = await getToken();
+      const { data } = await axios.post(backendUrl + '/api/educator/add-course', formData, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
+
+      if (data.success) {
+        toast.success(data.message)
+        setCourseTitle('');
+        setCoursePrice(0);
+        setDiscount(0);
+        setImage(null);
+        setChapters([]);
+        quillRef.current.root.innerHTML = '';
+      } else{
+        toast.error(data.message)
+      }
+
+    } catch (error) {
+      console.log(error);
+      toast.error(error.message)
+    }
+
   }
 
 
   useEffect(() => {
-    //quill initiate
+    //quill initiate only once
     if (!quillRef.current && editorRef.current) {
-      editorRef.current = new Quill(editorRef.current, {
+      quillRef.current = new Quill(editorRef.current, {
         theme: 'snow',
       });
     }
@@ -105,7 +151,7 @@ const AddCourse = () => {
 
   return (
     <div className='h-screen overflow-scroll flex flex-col items-start justify-between md:p-8 md:pb-0 p-4 pt-8 pb-0'>
-      <form onSubmit={handleSubmit} action="" className='flex flex-col gap-4 max-w-md w-full text-gray-500'>
+      <form onSubmit={handleSubmit} action="" className='flex flex-col gap-4 max-w-4xl w-full text-gray-500 mx-auto rounded-md p-4'>
 
         <div className='flex flex-col gap-1'>
           <p>Course Title</p>
@@ -124,12 +170,12 @@ const AddCourse = () => {
           </div>
 
           <div className='flex md:flex-row flex-col items-center gap-3'>
-            <p>Course Thumbnail</p>
-            <label htmlFor="thumbnailImage" className='flex items-center gap-3'>
+            <p className='pt-4'>Course Thumbnail</p>
+            <label htmlFor="thumbnailImage" className='flex items-center gap-3 pt-4'>
               <img src={assets.file_upload_icon} alt="" className='p-3 bg-blue-500 rounded' />
               <input type="file" id="thumbnailImage" onChange={e => setImage(e.target.files[0])} accept='image/*' hidden />
               {/* problem to be fixed */}
-              <img className='max-h-10' src={image ? URL.createObjectURL(image) : ""} alt="" />
+              <img className='max-h-14' src={image ? URL.createObjectURL(image) : ""} alt="" />
             </label>
           </div>
         </div>

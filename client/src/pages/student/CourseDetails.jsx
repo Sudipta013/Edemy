@@ -6,6 +6,8 @@ import { assets } from '../../assets/assets';
 import humanizeDuration from 'humanize-duration';
 import Footer from '../../components/student/Footer';
 import Youtube from 'react-youtube'
+import axios from 'axios';
+import { toast } from 'react-toastify';
 
 
 
@@ -18,16 +20,65 @@ const CourseDetails = () => {
   const [isAlreadyEnrolled, setIsAlreadyEnrolled] = useState(false);
   const [playerData, setPlayerData] = useState(null);
 
-  const { allCourses, calcAvgRating, calcChapterTime, calcCourseDuration, calcNoOfLectures, currency } = useContext(AppContext);
+  const { allCourses, calcAvgRating, calcChapterTime, calcCourseDuration, calcNoOfLectures, currency, backendUrl, userData, getToken } = useContext(AppContext);
 
   const fetchCourseData = async () => {
-    const findCourse = allCourses.find((course) => course._id === id)
-    setCourseData(findCourse);
+    // const findCourse = allCourses.find((course) => course._id === id)
+    // setCourseData(findCourse);
+
+    try {
+      const { data } = await axios.get(backendUrl + "/api/course/" + id);
+
+      if (data.success) {
+        setCourseData(data.courseData);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+  }
+
+  // function to enroll or buy in course
+  const enrollCourse = async () => {
+    try {
+      if (!userData) {
+        return toast.warn('Login to Enroll');
+      }
+      if (isAlreadyEnrolled) {
+        return toast.warn('You are already enrolled in this course');
+      }
+      const token = await getToken();
+
+      const { data } = await axios.post(backendUrl + "/api/user/purchase", {
+        courseId: courseData._id
+      }, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
+
+      if (data.success) {
+        const { session_url } = data;
+        window.location.replace(session_url);
+      } else {
+        toast.error(data.message);
+      }
+
+    } catch (error) {
+      toast.error(error.message);
+    }
   }
 
   useEffect(() => {
     fetchCourseData();
-  }, [allCourses]);
+  }, []);
+
+  useEffect(() => {
+    if (userData && courseData) {
+      setIsAlreadyEnrolled(userData.enrolledCourses.includes(courseData._id));
+    }
+  }, [userData, courseData]);
 
 
   const toggleSection = (sectionId) => {
@@ -57,10 +108,10 @@ const CourseDetails = () => {
             </div>
             <p className='text-blue-600'>({courseData.courseRatings.length}{courseData.courseRatings.length > 1 ? "reviews" : " review"})</p>
 
-            <p className=''>{courseData.enrolledStudents.length}{courseData.enrolledStudents.length > 1 ? " students enrolled" : "student enrolled"}</p>
+            <p className=''>{courseData.enrolledStudents.length} {courseData.enrolledStudents.length > 1 ? " students enrolled" : "student enrolled"}</p>
           </div>
 
-          <p className='text-sm'>Course by <span className='text-blue-600 underline'>AlexMathew</span></p>
+          <p className='text-sm'>Course by <span className='text-blue-600 underline'>{courseData.educator.name}</span></p>
 
           <div className='pt-8 text-gray-800'>
             <h2 className='text-lg font-semibold'>Course Structure</h2>
@@ -154,7 +205,7 @@ const CourseDetails = () => {
 
             </div>
 
-            <button className='px-6 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-semibold text-lg rounded-lg shadow-lg transition-transform transform hover:scale-105 hover:shadow-xl active:scale-95 w-full mt-5 cursor-pointer'>{isAlreadyEnrolled ? "Already Enrolled" : "Enroll Now"}</button>
+            <button onClick={enrollCourse} className='px-6 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-semibold text-lg rounded-lg shadow-lg transition-transform transform hover:scale-105 hover:shadow-xl active:scale-95 w-full mt-5 cursor-pointer'>{isAlreadyEnrolled ? "Already Enrolled" : "Enroll Now"}</button>
 
             <div className='pt-6'>
               <p className='md:text-xl text-lg font-medium text-gray-800'>What's in the course?</p>

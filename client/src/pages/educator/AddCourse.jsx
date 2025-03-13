@@ -25,7 +25,7 @@ const AddCourse = () => {
     lectureTitle: '',
     lectureDuration: '',
     lectureUrl: '',
-    isPreview: false,
+    isPreviewFree: false,
   })
 
 
@@ -88,7 +88,7 @@ const AddCourse = () => {
       lectureTitle: '',
       lectureDuration: '',
       lectureUrl: '',
-      isPreview: false,
+      isPreviewFree: false,
     });
   };
 

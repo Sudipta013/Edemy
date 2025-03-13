@@ -90,7 +90,7 @@ const CourseDetails = () => {
 
   return courseData ? (
     <>
-      <div className='flex md:flex-row flex-col-reverse gap-10 relative items-start justify-between md:px-36 px-8 md:pt-30 pt-20 text-left'>
+      <div className='flex md:flex-row flex-col-reverse gap-10 relative items-start justify-between md:px-40 px-8 md:pt-20 pt-10 sm:pt-20 text-left'>
 
         <div className='absolute top-0 left-0 w-full h-full bg-gradient-to-b from-cyan-100/70'></div>
 
@@ -124,7 +124,7 @@ const CourseDetails = () => {
                       <img className={`transform transition-transform ${openSections[index] ? 'rotate-180' : ''}`} src={assets.down_arrow_icon} alt="arrow_icon" />
                       <p className='font-medium md:text-base text-sm'>{chapter.chapterTitle}</p>
                     </div>
-                    <p className='text-sm md:text-default'>{chapter.chapterContent.length} lectures - {calcChapterTime(chapter)}</p>
+                    <p className='text-xs sm:text-sm md:text-default'>{chapter.chapterContent.length} lectures - {calcChapterTime(chapter)}</p>
                   </div>
 
                   <div className={`overflow-hidden transition-all duration-300 ${openSections[index] ? 'max-h-96' : 'max-h-0'}`}>

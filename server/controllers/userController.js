@@ -81,6 +81,16 @@ export const purchaseCourse = async (req, res) => {
             cancel_url: `${origin}/`,
             metadata:{
                 purchaseId: newPurchase._id.toString()
+            },
+            customer_details: {
+                name: userData.name || "Guest User",
+                address: {
+                    line1: userData.address?.line1 || "Default Address",
+                    city: userData.city?.city || "Default City",
+                    state: userData.state?.state || "Default State",
+                    postal_code: userData.postalCode?.postalCode || "Default Postal Code",
+                    country: userData.country?.country || "IN",
+                }
             }
         })
 

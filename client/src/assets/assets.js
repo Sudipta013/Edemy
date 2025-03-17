@@ -114,7 +114,7 @@ export const dummyTestimonial = [
         role: 'SWE 2 @ Samsung',
         image: assets.profile_img_2,
         rating: 4,
-        feedback: 'Edemy offers a seamless learning experience. The structured courses and interactive content make it stand out.',
+        feedback: 'Edemy offers seamless learning experience. The structured courses and interactive content make it stand out.',
     },
     {
         name: 'James Washington',

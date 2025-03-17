@@ -80,7 +80,7 @@ export const getEducatorDashboardData = async (req, res) => {
 		const totalEarnings = purchases.reduce(
 			(sum, purchase) => sum + purchase.amount,
 			0
-		);
+		).toFixed(2);
 
 		//collect unique enrolled ids with course titles
 		const enrolledStudentsData = [];
